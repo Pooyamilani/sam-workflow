@@ -1,0 +1,19 @@
+# Models + effort for the /sam-task workflow. Edit, save — applied at next session start
+# (or run: ~/.claude/sam-models-sync.py).
+# role          model    effort
+# model: opus | sonnet | haiku | fable | inherit | full id (claude-sonnet-5-5)
+# effort: low | medium | high | xhigh | max
+orchestrator    opus     medium
+implementer     sonnet   medium
+reviewer        sonnet   medium
+browser-tester  sonnet   medium
+closer          sonnet   medium
+
+# Browser used to read Jira and test the app:
+# auto (first available: builtin → chrome → playwright → devtools) | builtin | chrome | playwright | devtools
+browser         builtin
+
+# Personal settings read by the skills at runtime (all optional):
+# ticket_prefix   PROJ
+# jira_url        https://jira.example.com/browse
+# card_language   English
