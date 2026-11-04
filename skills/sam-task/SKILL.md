@@ -17,7 +17,11 @@ Pass every subagent the card key and plan path; they don't see this conversation
 
 There are **two hard stops**, marked ⛔. At each one, end the turn and wait for an explicit yes.
 
-## 1. Investigate the card (browser)
+## 1. Investigate the card (browser or MCP)
+
+- Read `jira` and `gitlab` in `~/.claude/sam-models.conf` (missing → `browser`). `mcp` → use the Jira MCP (tools named `mcp__jira__*`,
+  load via ToolSearch) to read the card, comments, links and attachments, and the GitLab MCP (`mcp__gitlab-mcp__*`) for linked MRs/branches.
+  Tool missing or auth failing → say so in one line and fall back to the browser steps below. With `mcp`, the browser is only needed for testing.
 
 - Open the card in the browser chosen per the `browser-test` skill, section 0 (`browser` in `~/.claude/sam-models.conf`). Given only a key, open `jira_url` (from the same conf) + the key. If the Jira login page shows up, ask the user to log in, wait, then continue. Never type credentials.
 - Read everything: the title, type, description, acceptance criteria, environment/template, **all comments**, linked issues, and links inside comments.

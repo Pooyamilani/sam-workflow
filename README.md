@@ -75,9 +75,24 @@ Edit `~/.claude/sam-models.conf` (created once, never overwritten), then run `~/
 |---|---|---|
 | `orchestrator`, `implementer`, `reviewer`, `browser-tester`, `closer` | `sonnet  medium` | model + effort per role |
 | `browser` | `builtin` | `auto` · `builtin` · `chrome` · `playwright` · `devtools` |
+| `jira`, `gitlab` | `mcp` | `browser` (default) or `mcp`: how the skill reads cards and MRs |
 | `ticket_prefix` | `PROJ` | prefix used for placeholder ticket numbers |
 | `jira_url` | `https://jira.example.com/browse` | lets you pass just a key |
 | `card_language` | `English` | language of the `/jira` output |
+
+## 🔌 MCP access (optional)
+
+Instead of driving Jira/GitLab through the browser, add their MCP servers once, then set `jira mcp` / `gitlab mcp` in `sam-models.conf`.
+Keep tokens out of this repo: `claude mcp add` stores them in your own `~/.claude.json`.
+
+```bash
+# Jira (Server/DC): needs uv (https://astral.sh/uv) and a personal access token
+claude mcp add jira -s user -e JIRA_URL=https://jira.example.com -e JIRA_PERSONAL_TOKEN=<PAT> -e JIRA_SSL_VERIFY=false -- uvx mcp-atlassian
+# GitLab: HTTP, asks you to log in on first use
+claude mcp add --transport http -s user gitlab-mcp https://gitlab.example.com/api/v4/mcp
+```
+
+Restart and open a new session; `gitlab-mcp` asks you to log in on first use.
 
 ## ✅ Requirements
 
