@@ -13,7 +13,7 @@ for line in (home / "sam-models.conf").read_text().splitlines():
         if len(parts) != 2 or parts[1] not in ("auto", "builtin", "chrome", "playwright", "devtools"):
             raise SystemExit(f"sam-models.conf: bad browser line: {line!r}")
         continue
-    if parts[0] in ("ticket_prefix", "jira_url", "card_language"):  # read at runtime by the skills
+    if parts[0] in ("ticket_prefix", "jira_url", "card_language", "gitlab_project", "mr_reviewers", "mr_target", "jira_mr_field"):  # read at runtime by the skills
         continue
     if len(parts) != 3:
         raise SystemExit(f"sam-models.conf: bad line: {line!r}")

@@ -26,6 +26,8 @@ flowchart LR
     E --> F["🌐 Live browser test"]
     F --> G{{"⛔ Commit<br/>you approve"}}
     G --> H["📝 Jira card + MR text"]
+    H --> I{{"⛔ Push + MR<br/>you approve"}}
+    I --> J["🔗 MR link on the Jira card"]
 ```
 
 You talk only to the **orchestrator** (`sam-task`). It does the investigation and planning itself, then delegates the rest:
@@ -38,6 +40,7 @@ You talk only to the **orchestrator** (`sam-task`). It does the investigation an
 | 4b · Review | `sam-reviewer` | Read-only review of the diff against the plan, up to 2 fix loops |
 | 5 · Live test | `sam-browser-tester` | Drives the real app: invariants, repeated interactions, narrow and desktop, then cleanup |
 | 6-7 · Close ⛔ | `sam-closer` | Proposes a commit message, **waits for your yes**, commits, writes the Jira card, branch names, MR description and QA scenarios |
+| 8 · Merge request ⛔ | orchestrator | On request: shows source → target, title and reviewers, **waits for your yes**, pushes, creates the GitLab MR (title, description, reviewers) and puts its link in the Jira card's merge-request field |
 
 > It never pushes unless you ask, never types credentials, and never invents API shapes.
 
@@ -78,6 +81,7 @@ Edit `~/.claude/sam-models.conf` (created once, never overwritten), then run `~/
 | `ticket_prefix` | `PROJ` | prefix used for placeholder ticket numbers |
 | `jira_url` | `https://jira.example.com/browse` | lets you pass just a key |
 | `card_language` | `English` | language of the `/jira` output |
+| `gitlab_project`, `mr_reviewers`, `mr_target`, `jira_mr_field` | `group/project`, `user1,user2`, `develop`, `Merge Request` | phase 8 (needs the GitLab MCP); all optional |
 
 ## ✅ Requirements
 

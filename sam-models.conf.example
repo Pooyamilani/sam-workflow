@@ -17,3 +17,8 @@ browser         builtin
 # ticket_prefix   PROJ
 # jira_url        https://jira.example.com/browse
 # card_language   English
+# Merge request, phase 8 (needs the GitLab MCP; optional):
+# gitlab_project  group/project      (empty = derived from `git remote get-url origin`)
+# mr_reviewers    user1,user2        (GitLab usernames; empty = Claude asks)
+# mr_target       develop            (empty = base branch from the project skill)
+# jira_mr_field   Merge Request      (label of the Jira field that holds the MR link)
