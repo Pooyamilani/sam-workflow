@@ -14,7 +14,7 @@ closer          sonnet   medium
 browser         builtin
 
 # How to reach Jira / GitLab (browser | mcp). mcp needs the server added once, see README "MCP access".
-# mcp not connected in the session -> the skill falls back to the browser and says so.
+# mcp not connected in the session -> the skill asks before switching that source to the browser.
 jira            browser
 gitlab          browser
 

@@ -21,7 +21,7 @@ There are **three hard stops**, marked ⛔. At each one, end the turn and wait f
 
 - Read `jira` and `gitlab` in `~/.claude/sam-models.conf` (missing → `browser`). `mcp` → use the Jira MCP (tools named `mcp__jira__*`,
   load via ToolSearch) to read the card, comments, links and attachments, and the GitLab MCP (`mcp__gitlab-mcp__*`) for linked MRs/branches.
-  Tool missing or auth failing → say so in one line and fall back to the browser steps below. With `mcp`, the browser is only needed for testing.
+  Tool missing, timing out or failing auth → don't switch to the browser on your own: say which MCP failed and why, ask the user (AskUserQuestion) whether to use the browser for that source, and use the browser steps below only on a yes. With `mcp`, the browser is otherwise only needed for testing.
 
 - Open the card in the browser chosen per the `browser-test` skill, section 0 (`browser` in `~/.claude/sam-models.conf`). Given only a key, open `jira_url` (from the same conf) + the key. If the Jira login page shows up, ask the user to log in, wait, then continue. Never type credentials.
 - Read everything: the title, type, description, acceptance criteria, environment/template, **all comments**, linked issues, and links inside comments.
@@ -95,7 +95,7 @@ Keep `.claude/plans/<KEY>.md` updated with what's done and what's left (it feeds
 Runs after phase 7, only when the user says so ("MR", "create the merge request") or accepts your offer at the end of phase 7.
 You do this yourself (the MCP tools and the browser are yours, not the subagents'). Follow the `jira` / `gitlab` modes from phase 1:
 `gitlab mcp` → create the MR with the GitLab MCP tools (`mcp__gitlab-mcp__*`, load via ToolSearch; use the tool names it actually exposes, the ones below are the usual names); `jira mcp` → write the link with the Jira MCP.
-A mode set to `browser`, or an MCP tool that is missing or failing auth, means doing that step in the browser instead. Say so in one line.
+A mode set to `browser` means doing that step in the browser. An MCP tool that is missing, timing out or failing auth is never a reason to switch silently: say which MCP failed and why, ask the user whether to do that step in the browser, and do it there only on a yes (on a no, stop and report that step as not done).
 Settings come from `~/.claude/sam-models.conf`: `gitlab_project`, `mr_reviewers`, `mr_target`, `jira_mr_field`.
 
 1. **Resolve inputs.**
@@ -106,7 +106,7 @@ Settings come from `~/.claude/sam-models.conf`: `gitlab_project`, `mr_reviewers`
    - Reviewers: `mr_reviewers` usernames → numeric ids via the GitLab `search` tool (users scope). If the conf is empty or a
      username can't be resolved, ask the user; never guess a reviewer. Don't set assignee unless asked.
    - Labels: only if the project skill names them (check with `search_labels`). Never invent labels.
-2. **Check for an existing MR** for the source branch (GitLab MCP `list_merge_requests`, or the project's MR list in the browser). If one is open, reuse it and skip to step 4.
+2. **Check for an existing MR** for the source branch (GitLab MCP `list_merge_requests` has no source-branch filter: list with state `opened` and match the source branch yourself; or the project's MR list in the browser). If one is open, reuse it and skip to step 4.
 3. ⛔ Show the user: source → target, title, reviewers, and say that you will `git push -u origin <branch>` (plain push, never `--force`).
    Wait for an explicit yes. Then push, and `create_merge_request` with title, description, `reviewer_ids`, `source_branch`, `target_branch`.
    Keep the returned `web_url`. If the push or creation fails, report the error as is; do not retry with force.
