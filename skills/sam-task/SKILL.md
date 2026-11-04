@@ -17,6 +17,51 @@ Pass every subagent the card key and plan path; they don't see this conversation
 
 There are **two hard stops**, marked ⛔. At each one, end the turn and wait for an explicit yes.
 
+## 1. Investigate the card (browser or MCP)
+
+- Read `jira` and `gitlab` in `~/.claude/sam-models.conf` (missing → `browser`). `mcp` → use the Jira MCP (tools named `mcp__jira__*`,
+  load via ToolSearch) to read the card, comments, links and attachments, and the GitLab MCP (`mcp__gitlab-mcp__*`) for linked MRs/branches.
+  Tool missing or auth failing → say so in one line and fall back to the browser steps below. With `mcp`, the browser is only needed for testing.
+
+- Open the card in the browser chosen per the `browser-test` skill, section 0 (`browser` in `~/.claude/sam-models.conf`). Given only a key, open `jira_url` (from the same conf) + the key. If the Jira login page shows up, ask the user to log in, wait, then continue. Never type credentials.
+- Read everything: the title, type, description, acceptance criteria, environment/template, **all comments**, linked issues, and links inside comments.
+  Follow a link or linked card when it changes how the card should be read.
+- Attachments: look at every screenshot. For a video, ask the user to download it (or convert it to mp4) and tell you the path. Pull frames with
+  `ffmpeg -i in.mp4 -vf fps=1 /tmp/.../f_%02d.png` and look at them. Say what the attachment shows that the text doesn't.
+- If the card gives URLs or steps to reproduce, **reproduce the bug yourself in the browser** before you decide on the root cause.
+
+## 2. Investigate the code
+
+- Use the `docs/` the project skill points to, then the code (grep/rg; graphify only for cross-file "what depends on X").
+- API involved? The API docs/OpenAPI are the source of truth. Never invent endpoints, DTOs or response shapes.
+- Find the actual root cause, not the symptom. Grep every caller of the function you plan to change.
+- Classify the issue as one of: bug, missing feature, API/data problem, template-specific, shared, or a misread report.
+  The reporter's suggested fix is a hint, not the spec.
+- Scope check: list which templates or apps the change reaches, and what has to stay the same.
+  Consider state, routing, localization/RTL, responsive layout and auth where they apply.
+
+## 3. Plan + branch ⛔
+
+- Work out the branch name from `git branch -a` / `git log` merge commits (for example `PROJ-1234_short-kebab-summary`). Never invent a new pattern.
+- Run `git status` first. If there is uncommitted work, stop and ask. Otherwise branch from the base branch in the project skill (default `develop`), after `git fetch` and a fast-forward.---
+name: sam-task
+model: opus
+effort: medium
+description: End-to-end Jira card workflow - investigate the card in the browser, plan, create the branch, implement after approval, live-test in the browser, commit after approval, then write the Jira card + MR content. Use when the user gives a Jira URL/key (e.g. PROJ-1234) and says "work on", "investigate", "pick up" or "/sam-task". Arg: Jira URL or key, optional phase to resume from (plan | implement | review | test | commit | jira).
+---
+
+# Jira task workflow
+
+Arg: `<jira-url-or-key> [phase]`. With no phase given, start at phase 1. With a phase, resume there.
+Read the project skill (`.claude/skills/project/SKILL.md`) first. Its rules beat this file's defaults.
+
+**One session per card.** This session (the orchestrator) does investigation and planning itself, and delegates the rest to
+subagents: implement → review → test → commit + Jira. It stays the only one talking to the user. Never suggest a new session for a phase.
+Models/effort per role: `~/.claude/sam-models.conf` (synced into each file's frontmatter at session start).
+Pass every subagent the card key and plan path; they don't see this conversation.
+
+There are **two hard stops**, marked ⛔. At each one, end the turn and wait for an explicit yes.
+
 ## 1. Investigate the card (browser)
 
 - Open the card in the browser chosen per the `browser-test` skill, section 0 (`browser` in `~/.claude/sam-models.conf`). Given only a key, open `jira_url` (from the same conf) + the key. If the Jira login page shows up, ask the user to log in, wait, then continue. Never type credentials.
