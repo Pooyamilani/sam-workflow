@@ -94,7 +94,7 @@ Keep `.claude/plans/<KEY>.md` updated with what's done and what's left (it feeds
 
 Runs after phase 7, only when the user says so ("MR", "create the merge request") or accepts your offer at the end of phase 7.
 You do this yourself (the MCP tools and the browser are yours, not the subagents'). Follow the `jira` / `gitlab` modes from phase 1:
-`gitlab mcp` → create the MR with the GitLab MCP tools (load via ToolSearch); `jira mcp` → write the link with the Jira MCP.
+`gitlab mcp` → create the MR with the GitLab MCP tools (`mcp__gitlab-mcp__*`, load via ToolSearch; use the tool names it actually exposes, the ones below are the usual names); `jira mcp` → write the link with the Jira MCP.
 A mode set to `browser`, or an MCP tool that is missing or failing auth, means doing that step in the browser instead. Say so in one line.
 Settings come from `~/.claude/sam-models.conf`: `gitlab_project`, `mr_reviewers`, `mr_target`, `jira_mr_field`.
 
@@ -110,8 +110,8 @@ Settings come from `~/.claude/sam-models.conf`: `gitlab_project`, `mr_reviewers`
 3. ⛔ Show the user: source → target, title, reviewers, and say that you will `git push -u origin <branch>` (plain push, never `--force`).
    Wait for an explicit yes. Then push, and `create_merge_request` with title, description, `reviewer_ids`, `source_branch`, `target_branch`.
    Keep the returned `web_url`. If the push or creation fails, report the error as is; do not retry with force.
-4. **Put the link on the Jira card.** With the Jira MCP, set the card's merge-request field through whatever field-update tool it exposes
-   and read the card back to confirm the link is there. Otherwise use the browser (same one as phase 1): open the card, find the field labelled `jira_mr_field`, paste the `web_url`, save, reload and confirm.
+4. **Put the link on the Jira card.** With the Jira MCP, first resolve `jira_mr_field` (a label) to its field id (`customfield_NNNNN`) with the
+   MCP's field-search tool, then set it with the issue-update tool and read the card back to confirm the link is there. Otherwise use the browser (same one as phase 1): open the card, find the field labelled `jira_mr_field`, paste the `web_url`, save, reload and confirm.
    If the login page appears, ask the user to log in and wait. If the field is missing or not editable, don't hunt for
    workarounds: give the user the URL and say which field was missing.
 5. Report: MR link, reviewers set, and whether the Jira field now shows the link. Add the MR link to `.claude/plans/<KEY>.md`.
