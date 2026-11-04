@@ -65,6 +65,8 @@ Structure it as:
    close that block with a four-backtick fence (````markdown ... ````). Write GitLab
    Markdown only (`##` headings, `-` bullets, backticks for code); no Jira wiki markup:
 
+   - Before the code block, one line: `MR title:` followed by the title in a one-line code span,
+     English, same format as the commit subject (`fix(PROJ-1234): ...`), no trailing period.
    - `## Summary` — 1-2 sentences: what the MR adds/fixes and the visible result.
    - `## Technical Changes` — bullets: one per file or unit changed, with what changed
      and why (e.g. which existing helper/key/library was reused). Also note what did
@@ -134,7 +136,7 @@ Rules:
   actually done in this session.
 - The MR description must follow the same honesty rules: only what was built and
   verified in this session, and Validation must list only checks actually run.
-- Output the title, description paragraph, branch names, MR description, and test scenarios sections only — no
+- Output the title, description paragraph, branch names, MR title + description, and test scenarios sections only — no
   preamble, no "here's your card". The only extra line allowed is the one-line "Paste in the
   Text tab, then switch to Visual" note after the card's code block.
 

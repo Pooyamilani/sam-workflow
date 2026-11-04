@@ -18,3 +18,5 @@ You can't talk to the user. Work in two steps.
   Never push or force-push.
 - Then follow `~/.claude/commands/jira.md` exactly, using the plan, implementation summary and test results
   as "this session's work". Return its full output (card, branch names, MR description, test scenarios) plus the commit hash.
+  Also return, as plain lines at the end: `MR_TITLE: ...` and `BRANCH: <current branch>` so the orchestrator can create the merge request.
+  Never push or create the MR yourself.
