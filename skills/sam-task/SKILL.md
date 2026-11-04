@@ -17,7 +17,11 @@ Pass every subagent the card key and plan path; they don't see this conversation
 
 There are **three hard stops**, marked ⛔. At each one, end the turn and wait for an explicit yes.
 
-## 1. Investigate the card (browser)
+## 1. Investigate the card (browser or MCP)
+
+- Read `jira` and `gitlab` in `~/.claude/sam-models.conf` (missing → `browser`). `mcp` → use the Jira MCP (tools named `mcp__jira__*`,
+  load via ToolSearch) to read the card, comments, links and attachments, and the GitLab MCP (`mcp__gitlab-mcp__*`) for linked MRs/branches.
+  Tool missing or auth failing → say so in one line and fall back to the browser steps below. With `mcp`, the browser is only needed for testing.
 
 - Open the card in the browser chosen per the `browser-test` skill, section 0 (`browser` in `~/.claude/sam-models.conf`). Given only a key, open `jira_url` (from the same conf) + the key. If the Jira login page shows up, ask the user to log in, wait, then continue. Never type credentials.
 - Read everything: the title, type, description, acceptance criteria, environment/template, **all comments**, linked issues, and links inside comments.
@@ -89,7 +93,9 @@ Keep `.claude/plans/<KEY>.md` updated with what's done and what's left (it feeds
 ## 8. Merge request + Jira link ⛔ (orchestrator)
 
 Runs after phase 7, only when the user says so ("MR", "create the merge request") or accepts your offer at the end of phase 7.
-You do this yourself: the GitLab MCP tools (`mcp__GitLab__*`), the Jira MCP (`mcp__jira__*`) and the browser are yours, not the subagents'.
+You do this yourself (the MCP tools and the browser are yours, not the subagents'). Follow the `jira` / `gitlab` modes from phase 1:
+`gitlab mcp` → create the MR with the GitLab MCP tools (load via ToolSearch); `jira mcp` → write the link with the Jira MCP.
+A mode set to `browser`, or an MCP tool that is missing or failing auth, means doing that step in the browser instead. Say so in one line.
 Settings come from `~/.claude/sam-models.conf`: `gitlab_project`, `mr_reviewers`, `mr_target`, `jira_mr_field`.
 
 1. **Resolve inputs.**
@@ -100,13 +106,12 @@ Settings come from `~/.claude/sam-models.conf`: `gitlab_project`, `mr_reviewers`
    - Reviewers: `mr_reviewers` usernames → numeric ids via the GitLab `search` tool (users scope). If the conf is empty or a
      username can't be resolved, ask the user; never guess a reviewer. Don't set assignee unless asked.
    - Labels: only if the project skill names them (check with `search_labels`). Never invent labels.
-2. **Check for an existing MR** for the source branch (`list_merge_requests`). If one is open, reuse it and skip to step 4.
+2. **Check for an existing MR** for the source branch (GitLab MCP `list_merge_requests`, or the project's MR list in the browser). If one is open, reuse it and skip to step 4.
 3. ⛔ Show the user: source → target, title, reviewers, and say that you will `git push -u origin <branch>` (plain push, never `--force`).
    Wait for an explicit yes. Then push, and `create_merge_request` with title, description, `reviewer_ids`, `source_branch`, `target_branch`.
    Keep the returned `web_url`. If the push or creation fails, report the error as is; do not retry with force.
-4. **Put the link on the Jira card.** Prefer the Jira MCP (`mcp__jira__jira_set_merge_request`, load via ToolSearch): it sets the
-   "Merge Request" field and reads it back (`saved: true` = confirmed). If the Jira MCP is unavailable, fall back to the browser
-   (same one as phase 1): open the card, find the field labelled `jira_mr_field`, paste the `web_url`, save, reload and confirm.
+4. **Put the link on the Jira card.** With the Jira MCP, set the card's merge-request field through whatever field-update tool it exposes
+   and read the card back to confirm the link is there. Otherwise use the browser (same one as phase 1): open the card, find the field labelled `jira_mr_field`, paste the `web_url`, save, reload and confirm.
    If the login page appears, ask the user to log in and wait. If the field is missing or not editable, don't hunt for
    workarounds: give the user the URL and say which field was missing.
 5. Report: MR link, reviewers set, and whether the Jira field now shows the link. Add the MR link to `.claude/plans/<KEY>.md`.

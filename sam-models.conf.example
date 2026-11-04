@@ -13,11 +13,17 @@ closer          sonnet   medium
 # auto (first available: builtin → chrome → playwright → devtools) | builtin | chrome | playwright | devtools
 browser         builtin
 
+# How to reach Jira / GitLab (browser | mcp). mcp needs the server added once, see README "MCP access".
+# mcp not connected in the session -> the skill falls back to the browser and says so.
+jira            browser
+gitlab          browser
+
 # Personal settings read by the skills at runtime (all optional):
 # ticket_prefix   PROJ
 # jira_url        https://jira.example.com/browse
 # card_language   English
-# Merge request, phase 8 (needs the GitLab MCP; optional):
+
+# Merge request, phase 8 (optional; uses the jira / gitlab modes above):
 # gitlab_project  group/project      (empty = derived from `git remote get-url origin`)
 # mr_reviewers    user1,user2        (GitLab usernames; empty = Claude asks)
 # mr_target       develop            (empty = base branch from the project skill)
